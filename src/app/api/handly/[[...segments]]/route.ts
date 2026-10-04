@@ -33,9 +33,13 @@ async function handler(
     }
     if (method !== "GET") {
       const origin = req.headers.get("origin");
-      const allowed = new URL(process.env.NEXTAUTH_URL!).origin;
-      // Browser mutations must include the trusted origin; Auth.js has its own CSRF protection.
-      invariant(origin === allowed, "Origen de solicitud no autorizado.", 403);
+      // Match the origin serving this request so LAN and Vercel aliases work,
+      // while still rejecting cross-origin browser mutations.
+      invariant(
+        origin === req.nextUrl.origin,
+        "Origen de solicitud no autorizado.",
+        403,
+      );
       invariant(
         req.headers.get("content-type")?.includes("application/json"),
         "Usa contenido JSON.",
